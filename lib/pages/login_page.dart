@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../controllers/login_controller.dart';
 import 'main_menu.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,109 +9,167 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-// mengatur seluruh proses dan tampilan halaman login
-class _LoginPageState extends State<LoginPage>{
-  // controller untuk mengambil input username
+class _LoginPageState extends State<LoginPage> {
+  // membuat controller untuk mengambil input pengguna.
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // menentukan apakah proses login sedang berlangsung
+  // memanggil controller login
+  final LoginController loginController = LoginController();
+
+  // mengatur kondisi loading dan tampilan password
   bool isLoading = false;
-  // mengatur apakah password disembunyikan atau ditampilkan
   bool obscurePassword = true;
 
-  // untuk melakukan proses login menggunakan REST API
+  // menjalankan proses login
   Future<void> login() async {
-
-    // memeriksa apakah username dan password sudah di isi
     if (usernameController.text.isEmpty ||
-        passwordController.text.isEmpty) {
-
-      // Menampilkan peringatan jika input masih kosong
+    passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username dan password harus diisi!'),
+        const SnackBar(content: Text('Username dan password harus diisi!'),
         ),
       );
-      
       return;
     }
-    
-    // mengubah status loading menjadi aktif
+
     setState(() {
       isLoading = true;
     });
-    
-    try {
-      
-      // mengirim request POST ke endpoint login
-      final response = await http.post(
-          Uri.parse('https://mediadwi.com/api/latihan/login'),
 
-        // mengirim username dan password ke server
-        body: {
-            'username': usernameController.text.trim(),
-          'password': passwordController.text,
-        },
-      );
+    // memanggil fungsi login dari logincontroller
+    final result = await loginController.login(
+      usernameController.text.trim(),
+      passwordController.text,
+    );
 
-      // mengubah respons JSON dari server menjadi Map
-      final data = jsonDecode(response.body);
+    if (!mounted) return;
 
-      // memastikan halaman masih aktif sebelum menggunakan context
-      if (!mounted) return;
+    setState(() {
+      isLoading = false;
+    });
 
-      // memeriksa apakah login berhasil
-      if (response.statusCode == 200 &&
-          data is Map &&
-          data['status'] == true) {
-
-        // mengarahkan pengguna ke main menu
-        // pushreplacement mencegah pengguna kembali ke halaman login
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const MainMenu(),
-            ),
+    // memeriksa hasil login dari controller.
+    if (result['success'] == true) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const MainMenu(),
+        ),
         );
-      } else {
-
-        // menampilkan pesan jika login gagal
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(data is Map ?
-              data['message']?.toString() ?? 'Login gagal!'
-              : 'Login gagal!',
-              ),
-              backgroundColor: Colors.red,
-            ),
-        );
-      }
-    } catch (e) {
-
-      // menampilkan peringatan jika terjadi kesalahan koneksi
-      if (!mounted) return;
-
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Terjadi kesalahan koneksi ke server!'),
+        SnackBar(content: Text(result['message'].toString()),
         backgroundColor: Colors.red,
         ),
       );
-    } finally {
-      // menghentikan indikator loading setelah proses selesai
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
     }
   }
 
-  // membersihkan controller ketika halaman tidak digunakan
   @override
   void dispose() {
+    // membersihkan controller input ketika halaman ditutup
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(25),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.restaurant_menu,
+                size: 85,
+                color: Colors.orange,
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Aplikasi Kuliner',
+                style: TextStyle(
+                  fontSize: 27,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Silakan login untuk melanjutkan',
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 35),
+
+              // Input username.
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  prefixIcon: const Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Input password.
+              TextField(
+                controller: passwordController,
+                obscureText: obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: const Icon(Icons.lock),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 25),
+
+              // Tombol login.
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(
+                    color: Colors.white,
+                  )
+                      : const Text(
+                    'LOGIN',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
