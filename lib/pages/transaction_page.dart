@@ -65,7 +65,7 @@ class _TransactionPageState extends State<TransactionPage> {
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,8 +129,6 @@ class _TransactionPageState extends State<TransactionPage> {
               formatRupiah(total),
               isBold: true,
             ),
-
-            const Spacer(),
 
             // Tombol menyelesaikan transaksi.
             SizedBox(

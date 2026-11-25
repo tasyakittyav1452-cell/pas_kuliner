@@ -32,7 +32,7 @@ class ProfilePage extends StatelessWidget {
 
               // Menampilkan informasi profil.
               const Text(
-                'Nama Lengkap Kamu',
+                'Filzah Zhaafirah Fushshilat Aroky',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class ProfilePage extends StatelessWidget {
                           color: Colors.orange,
                         ),
                         title: Text('Kelas'),
-                        subtitle: Text('10 PPLG'),
+                        subtitle: Text('11 PPLG 3'),
                       ),
                       Divider(),
                       ListTile(
@@ -73,7 +73,7 @@ class ProfilePage extends StatelessWidget {
                           color: Colors.orange,
                         ),
                         title: Text('Nomor Absen'),
-                        subtitle: Text('Isi nomor absen'),
+                        subtitle: Text('08'),
                       ),
                       Divider(),
                       ListTile(
@@ -83,8 +83,8 @@ class ProfilePage extends StatelessWidget {
                         ),
                         title: Text('Tentang Saya'),
                         subtitle: Text(
-                          'Saya adalah siswa yang sedang belajar '
-                              'pemrograman dan pengembangan aplikasi.',
+                          'Saya adalah siswa PPLG yang sedang belajar pemrograman'
+                              'dan pengembangan aplikasi dengan ide ide yang ada pada otak saya.',
                         ),
                       ),
                     ],
